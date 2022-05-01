@@ -19,9 +19,15 @@ connection.connect((error) => {
     console.log("Error connecting to the MySQL Database");
     return;
   }
+  console.log("\n");
+  console.log(
+    "Successfully connected to company database." + connection.threadId
+  );
+  console.log("\n");
+  promptUser();
 });
 
-const init = () => {
+const promptUser = () => {
   inquirer
     .prompt([
       {
@@ -47,44 +53,54 @@ const init = () => {
       },
     ])
     .then((answers) => {
-      switch (answers.init) {
-        case "View all Departments":
-          viewDepartments();
-          break;
-        case "Add a Department":
-          addDepartment();
-          break;
-        case "Delete a Department":
-          deleteDepartment();
-          break;
-        case "View all Roles":
-          viewRoles();
-          break;
-        case "Add a Role":
-          addRole();
-          break;
-        case "Delete a Role":
-          deleteRole();
-          break;
-        case "View all Employees":
-          viewEmployees();
-          break;
-        case "Add an Employee":
-          addEmployee();
-          break;
-        case "Update an Employee's Role":
-          updateEmployee();
-          break;
-        case "Update Employee Managers":
-          updateManagers();
-          break;
-        case "Delete an Employee":
-          deleteEmployee();
-          break;
-        case "Exit Employee Tracker":
-          console.log("Your connection to the MySQL Database has ended.");
-          connection.end();
-          break;
+      const { choices } = answers;
+
+      if (choices === "View all Departments") {
+        viewDepartments();
+      }
+
+      if (choices === "Add a Department") {
+        addDepartment();
+      }
+
+      if (choices === "Delete a Department") {
+        deleteDepartment();
+      }
+
+      if (choices === "View all Roles") {
+        viewRoles();
+      }
+
+      if (choices === "Add a Role") {
+        addRole();
+      }
+
+      if (choices === "Delete a Role") {
+        deleteRole();
+      }
+
+      if (choices === "View all Employees") {
+        viewEmployees();
+      }
+
+      if (choices === "Add an Employee") {
+        addEmployee();
+      }
+
+      if (choices === "Update an Employee's Role") {
+        updateEmployee();
+      }
+
+      if (choices === "Update Employee Managers") {
+        updateManagers();
+      }
+
+      if (choices === "Delete an Employee") {
+        deleteEmployee();
+      }
+
+      if (choices === "Exit Employee Tracker") {
+        connection.end();
       }
     });
 };
@@ -93,15 +109,13 @@ const init = () => {
 // sortByManager() is a function within ViewEmployees()
 // sortByDepartment() is a function within ViewEmployees()
 
-function viewDepartments() {
+viewDepartments = () => {
+  console.log("Company has the following departments:\n");
   const sql = `SELECT name AS 'Departments' FROM departments`;
 
-  connection.query(sql, (err, res) => {
+  connection.query(sql, (err, rows) => {
     if (err) throw err;
-    console.table(res);
-    init();
+    console.table(rows);
+    promptUser();
   });
-}
-
-// start inquirer
-init();
+};
