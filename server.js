@@ -30,23 +30,20 @@ const init = () => {
         message: "What would you like to do?",
         choices: [
           "View all Departments",
-          "View all Roles",
-          "View all Employees",
-          "View Employees by Manager",
-          "View Employees by Department",
-          "View Department Budget",
           "Add a Department",
+          "Delete a Department",
+          "View all Roles",
           "Add a Role",
+          "Delete a Role",
+          "View all Employees",
           "Add an Employee",
           "Update an Employee's Role",
           "Update Employee Managers",
-          "Delete a Department",
-          "Delete a Role",
           "Delete an Employee",
           "Exit Employee Tracker",
         ],
         loop: false,
-        pageSize: 15,
+        pageSize: 12,
       },
     ])
     .then((answers) => {
@@ -54,26 +51,23 @@ const init = () => {
         case "View all Departments":
           viewDepartments();
           break;
-        case "View all Roles":
-          viewRoles();
-          break;
-        case "View all Employees":
-          viewEmployees();
-          break;
-        case "View Employees by Manager":
-          viewEmployeesByManager();
-          break;
-        case "View Employees by Department":
-          viewEmployeesByDepartment();
-          break;
-        case "View Department Budget":
-          viewDepartmentBudget();
-          break;
         case "Add a Department":
           addDepartment();
           break;
+        case "Delete a Department":
+          deleteDepartment();
+          break;
+        case "View all Roles":
+          viewRoles();
+          break;
         case "Add a Role":
           addRole();
+          break;
+        case "Delete a Role":
+          deleteRole();
+          break;
+        case "View all Employees":
+          viewEmployees();
           break;
         case "Add an Employee":
           addEmployee();
@@ -83,12 +77,6 @@ const init = () => {
           break;
         case "Update Employee Managers":
           updateManagers();
-          break;
-        case "Delete a Department":
-          deleteDepartment();
-          break;
-        case "Delete a Role":
-          deleteRole();
           break;
         case "Delete an Employee":
           deleteEmployee();
@@ -100,6 +88,20 @@ const init = () => {
       }
     });
 };
+
+// viewDepartmentBudget() is a function within viewDepartments()
+// sortByManager() is a function within ViewEmployees()
+// sortByDepartment() is a function within ViewEmployees()
+
+function viewDepartments() {
+  const sql = `SELECT name AS 'Departments' FROM departments`;
+
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    init();
+  });
+}
 
 // start inquirer
 init();
