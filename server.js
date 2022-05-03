@@ -20,9 +20,7 @@ connection.connect((error) => {
     return;
   }
   console.log("\n");
-  console.log(
-    "Successfully connected to company database." + connection.threadId
-  );
+  console.log("Successfully connected to company database.");
   console.log("\n");
   promptUser();
 });
@@ -43,9 +41,9 @@ const promptUser = () => {
           "Delete a Role",
           "View all Employees",
           "Add an Employee",
+          "Delete an Employee",
           "Update an Employee's Role",
           "Update Employee Managers",
-          "Delete an Employee",
           "Exit Employee Tracker",
         ],
         loop: false,
@@ -53,7 +51,7 @@ const promptUser = () => {
       },
     ])
     .then((answers) => {
-      const { choices } = answers;
+      choices = answers.initial;
 
       if (choices === "View all Departments") {
         viewDepartments();
@@ -87,6 +85,10 @@ const promptUser = () => {
         addEmployee();
       }
 
+      if (choices === "Delete an Employee") {
+        deleteEmployee();
+      }
+
       if (choices === "Update an Employee's Role") {
         updateEmployee();
       }
@@ -95,20 +97,13 @@ const promptUser = () => {
         updateManagers();
       }
 
-      if (choices === "Delete an Employee") {
-        deleteEmployee();
-      }
-
       if (choices === "Exit Employee Tracker") {
         connection.end();
       }
     });
 };
 
-// viewDepartmentBudget() is a function within viewDepartments()
-// sortByManager() is a function within ViewEmployees()
-// sortByDepartment() is a function within ViewEmployees()
-
+// "View" functions
 viewDepartments = () => {
   console.log("Company has the following departments:\n");
   const sql = `SELECT name AS 'Departments' FROM departments`;
@@ -116,6 +111,147 @@ viewDepartments = () => {
   connection.query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
+    inquirer
+      .prompt([
+        {
+          name: "sortDepartments",
+          type: "confirm",
+          message: "Would you like to view a departments budget?",
+        },
+      ])
+      .then((answers) => {
+        if (answers.sortDepartments === true) {
+          viewDepartmentBudget();
+        } else {
+          promptUser();
+        }
+      });
+  });
+};
+
+// need help with this function = importing department.name from departments table?
+// similar to the votes function in the module
+viewDepartmentBudget = () => {
+  const departments = [];
+  inquirer.prompt([
+    {
+      name: "whichDepartment",
+      type: "list",
+      message: "Which departments budget would you like to view?",
+      choices: departments,
+    },
+  ]);
+};
+
+viewRoles = () => {
+  console.log("Company has the following roles:\n");
+  const sql = `SELECT title AS 'Roles' FROM roles`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
     promptUser();
+  });
+};
+
+viewEmployees = () => {
+  inquirer
+    .prompt([
+      {
+        name: "sortBy",
+        type: "list",
+        message: "How would you like to view your employees?",
+        choices: ["Last Name", "Manager", "Department"],
+      },
+    ])
+    .then((answers) => {
+      choices = answers.sortBy;
+
+      if (choices === "Last Name") {
+        sortByLastName();
+      }
+
+      if (choices === "Manager") {
+        sortByManager();
+      }
+
+      if (choices === "Department") {
+        sortByDepartment();
+      }
+    });
+};
+
+// Sort Employees Functions
+sortByLastName = () => {
+  console.log("Viewing Employees by Last Name:\n");
+  const sql = `SELECT CONCAT(first_name," ", last_name) AS "Employees" from employees ORDER BY last_name`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptUser();
+  });
+};
+
+// need help with this function = JOIN same table for data?
+sortByManager = () => {
+  console.log("Viewing Employees by Manager:\n");
+  const sql = `SELECT manager_id`;
+};
+
+// "Add" functions
+addDepartment = () => {};
+
+addRole = () => {};
+
+addEmployee = () => {};
+
+// "Delete" functions
+deleteDepartment = () => {};
+
+deleteRole = () => {};
+
+deleteEmployee = () => {};
+
+// "Update" functions
+
+updateEmployee = () => {};
+
+updateManagers = () => {};
+
+// Async Functions
+departmentsAsync = () => {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM departments`, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(data);
+    });
+  });
+};
+
+rolesAsync = () => {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT id, title AS "role" FROM roles`, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(data);
+    });
+  });
+};
+
+employeesAsync = () => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT id, first_name, last_name FROM employees ORDER BY last_name`,
+      (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
+      }
+    );
   });
 };
