@@ -1,53 +1,65 @@
-# employee-tracker
+# Employee Tracker
 
-## USER STORY
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- AS A business owner
-- I WANT to be able to view and manage the departments, roles, and employees in my company
-- SO THAT I can organize and plan my business
+## Description
 
-## Acceptance Criteria
+Employee Tracker is a command-line application that is used to manage a company's employee database. 
 
-- GIVEN a command-line application that accepts user input
-<!--node.js-->
-- WHEN I start the application
-- THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
-<!--inquirer list-->
-- WHEN I choose to view all departments
-- THEN I am presented with a formatted table showing department names and department ids
-<!--populated departments mySQL table presented with console.table, this is similar to the parties table-->
-- WHEN I choose to view all roles
-- THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-<!--populated roles mySQL table presented with console.table, this is similar to the candidates table-->
-- WHEN I choose to view all employees
-- THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-<!--populated employees mySQL table presented with console.table, this is similar to the voters table-->
-- WHEN I choose to add a department
-- THEN I am prompted to enter the name of the department and that department is added to the database
-<!--inquirer prompt which upon submission `INSERT INTO` departments table-->
-- WHEN I choose to add a role
-- THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-<!--inquirer prompts which upon submission format data and `INSERT INTO` roles table-->
-- WHEN I choose to add an employee
-- THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
-<!--inquirer prompts which upon submission format data and `INSERT INTO` employees table-->
-- WHEN I choose to update an employee role
-- THEN I am prompted to select an employee to update and their new role and this information is updated in the database
-<!--inquirer list of employees, prompts to select new role from list of existing roles, `UPDATE` employees table-->
+## Table of Contents
+- [Description](#Description)
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [Questions](#Questions)
+- [License](#License)
 
-## Bonus
+##
+  
+## Installation
 
-Try to add some additional functionality to your application, such as the ability to do the following:
+To install this application clone the repository to your local machine either by an HTTP or an SSH link.
 
-- Update employee managers. +2 points
-<!--similar to `update a candidate's party-->
-- View employees by manager. +2 points
-<!--create a SORT BY function-->
-- View employees by department. +2 points
-<!--create a SORT BY function-->
-- Delete departments, roles, and employees. +2 points each
-<!--create a delete function-->
-- View the total utilized budget of a department—in other words, the combined salaries of all employees in that department. +8 points
-<!--similar to router.get("/votes) in voteRoutes.js-->
+```bash
+git clone
+```
+  
+Once you have the repository cloned to your local machine, navigate to the root folder of the repository and install all npm dependencies.
 
+```bash
+npm install
+```
 
+This will install all the necessary dependancies in order for the application to run.
+
+## Usage
+
+To use the application, navigate to the root folder of the repository of this application in the terminal and enter the following: 
+
+```bash
+node server.js
+```
+
+You will then be connected to the company database and prompted with a series of items. 
+You can view your departments, roles, and employees. 
+You can also add, and delete, departments, roles, and employees. 
+Or you can update an Employee's role, or who they report to. 
+
+Below are some screenshots of what the terminal output should look like.
+<img width="854" alt="userPrompt" src="https://user-images.githubusercontent.com/47282257/166802952-ca82f273-e974-46d4-9044-a22314075a99.png">
+<img width="854" alt="departments" src="https://user-images.githubusercontent.com/47282257/166802977-39a21fe4-2e3c-4684-96f1-95227142faf2.png">
+<img width="854" alt="roles" src="https://user-images.githubusercontent.com/47282257/166802995-6bb94922-89ac-46d3-9e1a-20b0d0c6ed6a.png">
+<img width="854" alt="employees" src="https://user-images.githubusercontent.com/47282257/166803006-1b86d829-c20f-4bd4-915f-b7c307f85ea0.png">
+
+This is a sample video of the application in use:
+https://drive.google.com/file/d/1cTq9UX9Ko5gf8iEhi8tANmpt0EruVHc1/view?usp=sharing 
+
+## Questions
+  
+To view other applications I have built: [Github](#https://github.com/ianaack)
+
+Or if you have any questions about this application please reach out to me directly via email: ianaack@gmail.com
+
+## License
+
+This project is covered under the MIT License.
+  
