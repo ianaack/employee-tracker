@@ -105,8 +105,8 @@ const promptUser = () => {
 
 // "View" functions
 viewDepartments = () => {
-  console.log("Company has the following departments:\n");
-  const sql = `SELECT name AS 'Departments' FROM departments`;
+  console.log("\nCompany has the following departments:\n");
+  const sql = `SELECT name AS Department FROM departments`;
 
   connection.query(sql, (err, rows) => {
     if (err) throw err;
@@ -121,7 +121,7 @@ viewDepartments = () => {
       ])
       .then((answers) => {
         if (answers.sortDepartments === true) {
-          viewDepartmentBudget();
+          viewDepartmentBudget(rows);
         } else {
           promptUser();
         }
@@ -129,23 +129,40 @@ viewDepartments = () => {
   });
 };
 
-// need help with this function = importing department.name from departments table?
-// similar to the votes function in the module
-viewDepartmentBudget = () => {
-  const departments = [];
-  inquirer.prompt([
-    {
-      name: "whichDepartment",
-      type: "list",
-      message: "Which departments budget would you like to view?",
-      choices: departments,
-    },
-  ]);
+viewDepartmentBudget = (rows) => {
+  let departmentsNames = rows.map(function (element) {
+    return `${element.Department}`;
+  });
+
+  inquirer
+    .prompt([
+      {
+        name: "whichDepartment",
+        type: "list",
+        message: "Which departments budget would you like to view?",
+        choices: departmentsNames,
+      },
+    ])
+    .then(({ whichDepartment }) => {
+      const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS Employee, roles.title AS Title, roles.salary as Salary, departments.name AS Department FROM employees RIGHT JOIN roles on employees.role_id = roles.id RIGHT JOIN departments ON departments.id = roles.department_id WHERE name = "${whichDepartment}"`;
+
+      connection.query(sql, (err, rows) => {
+        if (err) throw err;
+        let budget = 0;
+        for (let i = 0; i < rows.length; i++) {
+          budget += parseInt(rows[i].Salary);
+        }
+        console.log(
+          `\nThe current total budget allocated to ${whichDepartment} is ${budget}\n`
+        );
+        promptUser();
+      });
+    });
 };
 
 viewRoles = () => {
-  console.log("Company has the following roles:\n");
-  const sql = `SELECT title AS 'Roles' FROM roles`;
+  console.log("\nCompany has the following roles:\n");
+  const sql = `SELECT roles.title AS Role, roles.salary as Salary, departments.name AS Department FROM roles LEFT JOIN departments ON roles.department_id = departments.id`;
 
   connection.query(sql, (err, rows) => {
     if (err) throw err;
@@ -193,14 +210,61 @@ sortByLastName = () => {
   });
 };
 
-// need help with this function = JOIN same table for data?
 sortByManager = () => {
-  console.log("Viewing Employees by Manager:\n");
-  const sql = `SELECT manager_id`;
+  console.log("Viewing Employees by Manager\n");
+  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", employees.manager_id, CONCAT(manager.first_name," ", manager.last_name) AS "Manager" FROM employees LEFT JOIN employees AS manager ON manager.id = employees.manager_id ORDER BY manager_id`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptUser();
+  });
+};
+
+// need to make - similar to sortByManager, just reference a different table
+sortByDepartment = () => {
+  console.log("Viewing Employees by Department\n");
+  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", employees.role_id, department.name AS "Department" FROM employees LEFT JOIN departments ON employees.role_id = roles.id`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptUser();
+  });
 };
 
 // "Add" functions
-addDepartment = () => {};
+addDepartment = () => {
+  return inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "addDept",
+        message: "What is the name of the department you would like to add?",
+        validate: (input) => {
+          if (input) {
+            return true;
+          } else {
+            console.log("Please enter a department name.");
+            return false;
+          }
+        },
+      },
+    ])
+    .then(({ addDept }) => {
+      console.log(addDept);
+      const sql = `INSERT INTO departments (name) VALUES (?)`;
+      const params = [addDept];
+
+      connection.query(sql, params, (err, rows) => {
+        if (err) throw err;
+        console.log(`${addDept} added to database`);
+      });
+    })
+    .then(() => {
+      promptUser();
+    });
+};
 
 addRole = () => {};
 
