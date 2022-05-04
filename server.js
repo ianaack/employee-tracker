@@ -19,9 +19,7 @@ connection.connect((error) => {
     console.log("Error connecting to the MySQL Database");
     return;
   }
-  console.log("\n");
-  console.log("Successfully connected to company database.");
-  console.log("\n");
+  console.log("\nSuccessfully connected to the company database.\n");
   promptUser();
 });
 
@@ -224,7 +222,7 @@ sortByManager = () => {
 // need to make - similar to sortByManager, just reference a different table
 sortByDepartment = () => {
   console.log("Viewing Employees by Department\n");
-  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", employees.role_id, department.name AS "Department" FROM employees LEFT JOIN departments ON employees.role_id = roles.id`;
+  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", roles.title AS Role, roles.salary AS Salary, departments.name AS Department FROM employees RIGHT JOIN roles ON employees.role_id = roles.id RIGHT JOIN departments ON departments.id = roles.department_id ORDER BY department_id DESC`;
 
   connection.query(sql, (err, rows) => {
     if (err) throw err;
@@ -245,20 +243,19 @@ addDepartment = () => {
           if (input) {
             return true;
           } else {
-            console.log("Please enter a department name.");
+            console.log("\nPlease enter a department name.\n");
             return false;
           }
         },
       },
     ])
     .then(({ addDept }) => {
-      console.log(addDept);
       const sql = `INSERT INTO departments (name) VALUES (?)`;
       const params = [addDept];
 
       connection.query(sql, params, (err, rows) => {
         if (err) throw err;
-        console.log(`${addDept} added to database`);
+        console.log(`${addDept} has been added to database`);
       });
     })
     .then(() => {
@@ -266,7 +263,62 @@ addDepartment = () => {
     });
 };
 
-addRole = () => {};
+addRole = () => {
+  const sql = `SELECT departments.name FROM departments`;
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "roleTitle",
+          message: "What role would you like to add?",
+          validate: (input) => {
+            if (input) {
+              return true;
+            } else {
+              console.log("\n\nPlease enter a role title.\n");
+              return false;
+            }
+          },
+        },
+        {
+          type: "number",
+          name: "roleSalary",
+          message: "What is the roles salary?",
+        },
+        {
+          type: "list",
+          name: "deptName",
+          message: "What department does this role belong to?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ roleTitle, roleSalary, deptName }) => {
+        const addRoles = function (title, salary, deptID) {
+          const sql = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
+          const params = [title, salary, deptID];
+
+          connection.query(sql, params, (err) => {
+            if (err) throw err;
+            console.log(`\n${title} has been added to the database\n`);
+            promptUser();
+          });
+        };
+
+        const getDeptID = function (roleTitle, roleSalary, deptName) {
+          const sql = `SELECT departments.id FROM departments WHERE departments.name = "${deptName}"`;
+
+          connection.query(sql, (err, rows) => {
+            if (err) throw err;
+            addRoles(roleTitle, roleSalary, rows[0].id);
+          });
+        };
+        getDeptID(roleTitle, roleSalary, deptName);
+      });
+  });
+};
 
 addEmployee = () => {};
 
@@ -282,40 +334,3 @@ deleteEmployee = () => {};
 updateEmployee = () => {};
 
 updateManagers = () => {};
-
-// Async Functions
-departmentsAsync = () => {
-  return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM departments`, (err, data) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(data);
-    });
-  });
-};
-
-rolesAsync = () => {
-  return new Promise((resolve, reject) => {
-    connection.query(`SELECT id, title AS "role" FROM roles`, (err, data) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(data);
-    });
-  });
-};
-
-employeesAsync = () => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      `SELECT id, first_name, last_name FROM employees ORDER BY last_name`,
-      (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(data);
-      }
-    );
-  });
-};
