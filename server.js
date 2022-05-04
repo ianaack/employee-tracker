@@ -198,7 +198,7 @@ viewEmployees = () => {
 
 // Sort Employees Functions
 sortByLastName = () => {
-  console.log("Viewing Employees by Last Name:\n");
+  console.log("Viewing Employees by Last Name\n");
   const sql = `SELECT CONCAT(first_name," ", last_name) AS "Employees" from employees ORDER BY last_name`;
 
   connection.query(sql, (err, rows) => {
@@ -424,14 +424,103 @@ addEmployee = () => {
 };
 
 // "Delete" functions
-deleteDepartment = () => {};
+deleteDepartment = () => {
+  const sql = `SELECT departments.name FROM departments`;
 
-deleteRole = () => {};
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "deleteDepartment",
+          message: "Which Department would you like to remove?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ deleteDepartment }) => {
+        const sql = `DELETE FROM departments WHERE name = "${deleteDepartment}"`;
 
-deleteEmployee = () => {};
+        connection.query(sql, (err, rows) => {
+          if (err) throw err;
+          console.log(
+            `\n${deleteDepartment} has been removed from the database.\n`
+          );
+          promptUser();
+        });
+      });
+  });
+};
+
+deleteRole = () => {
+  const sql = `SELECT roles.title AS name FROM roles`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "deleteRole",
+          message: "Which Role would you like to remove?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ deleteRole }) => {
+        const sql = `DELETE FROM roles WHERE title = "${deleteRole}"`;
+
+        connection.query(sql, (err, rows) => {
+          if (err) throw err;
+          console.log(`\n${deleteRole} has been removed from the database.\n`);
+          promptUser();
+        });
+      });
+  });
+};
+
+deleteEmployee = () => {
+  const sql = `SELECT CONCAT(employees.id," ", employees.first_name," ", employees.last_name) AS name FROM employees`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "deleteEmployee",
+          message: "Which Employee would you like to remove?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ deleteEmployee }) => {
+        let employeeId = deleteEmployee.split(" ")[0];
+        let employeeFirstName = deleteEmployee.split(" ")[1];
+        let employeeLastName = deleteEmployee.split(" ")[2];
+        const sql = `DELETE FROM employees WHERE (employees.first_name = "${employeeFirstName}" AND employees.last_name = "${employeeLastName}")`;
+
+        connection.query(sql, (err, rows) => {
+          if (err) throw err;
+          console.log(
+            `\n${employeeFirstName} ${employeeLastName} has been removed from the database.\n`
+          );
+          promptUser();
+        });
+      });
+  });
+};
 
 // "Update" functions
 
-updateEmployee = () => {};
+updateEmployee = () => {
+  // which employee would you like to update? - list
+  // update role_id function
+};
 
-updateManagers = () => {};
+updateManagers = () => {
+  // which employee would you like to update? - list
+  // who is their new manager? - list
+  // update manager_id function
+};
