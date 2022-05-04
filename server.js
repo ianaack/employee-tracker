@@ -219,10 +219,9 @@ sortByManager = () => {
   });
 };
 
-// need to make - similar to sortByManager, just reference a different table
 sortByDepartment = () => {
   console.log("Viewing Employees by Department\n");
-  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", roles.title AS Role, roles.salary AS Salary, departments.name AS Department FROM employees RIGHT JOIN roles ON employees.role_id = roles.id RIGHT JOIN departments ON departments.id = roles.department_id ORDER BY department_id DESC`;
+  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS "Employee", roles.title AS Role, roles.salary AS Salary, departments.name AS Department FROM employees RIGHT JOIN roles ON employees.role_id = roles.id RIGHT JOIN departments ON departments.id = roles.department_id ORDER BY department_id`;
 
   connection.query(sql, (err, rows) => {
     if (err) throw err;
@@ -233,6 +232,7 @@ sortByDepartment = () => {
 
 // "Add" functions
 addDepartment = () => {
+  // this is a straight add to the database as this is the top most table
   return inquirer
     .prompt([
       {
@@ -264,6 +264,7 @@ addDepartment = () => {
 };
 
 addRole = () => {
+  // this is a little more complicated because we need to reference and send data to two tables (the roles table, and the departments table)
   const sql = `SELECT departments.name FROM departments`;
   connection.query(sql, (err, rows) => {
     if (err) throw err;
@@ -295,6 +296,8 @@ addRole = () => {
           loop: false,
         },
       ])
+      // now that we have our information, we need to call and pass the information to the appropriate tables
+      // this first function puts the information into the roles table
       .then(({ roleTitle, roleSalary, deptName }) => {
         const addRoles = function (title, salary, deptID) {
           const sql = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
@@ -307,6 +310,7 @@ addRole = () => {
           });
         };
 
+        // this function calls the proper department.name and passes in the roleTitle and roleSalary information into the departments table
         const getDeptID = function (roleTitle, roleSalary, deptName) {
           const sql = `SELECT departments.id FROM departments WHERE departments.name = "${deptName}"`;
 
@@ -320,7 +324,104 @@ addRole = () => {
   });
 };
 
-addEmployee = () => {};
+addEmployee = () => {
+  // this is the most complicated function as we need to reference and pass information to all 3 tables
+  // this first call is to the employees table, to determine the new employee's manager
+  const sql = `SELECT CONCAT(employees.first_name," ", employees.last_name) AS name FROM employees`;
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "managersName",
+          message: "Who is the new employee's manager?",
+          choices: rows,
+        },
+      ])
+      .then(({ managersName }) => {
+        getManagerID(managersName);
+      });
+    const getManagerID = function (managersName) {
+      const sql = `SELECT employees.id FROM employees WHERE CONCAT(employees.first_name," ", employees.last_name) = "${managersName}"`;
+
+      connection.query(sql, (err, rows) => {
+        if (err) throw err;
+        let managerId = rows[0].id;
+
+        let newEmployee = function (managerId) {
+          const sql = `SELECT roles.title AS name FROM roles`;
+
+          connection.query(sql, (err, rows) => {
+            if (err) throw err;
+            inquirer
+              .prompt([
+                {
+                  type: "input",
+                  name: "firstName",
+                  message: "What is the new employee's first name?",
+                  validate: (input) => {
+                    if (input) {
+                      return true;
+                    } else {
+                      console.log(
+                        "\n\nPlease enter a first name for the employee.\n"
+                      );
+                      return false;
+                    }
+                  },
+                },
+                {
+                  type: "input",
+                  name: "lastName",
+                  message: "What is the new employee's last name?",
+                  validate: (input) => {
+                    if (input) {
+                      return true;
+                    } else {
+                      console.log(
+                        "\n\nPlease enter a last name for the employee.\n"
+                      );
+                      return false;
+                    }
+                  },
+                },
+                {
+                  type: "list",
+                  name: "roleTitle",
+                  message: "What is the new employee's role?",
+                  choices: rows,
+                  loop: false,
+                },
+              ])
+              .then(({ firstName, lastName, roleTitle }) => {
+                getRoleId(firstName, lastName, roleTitle, managerId);
+              });
+          });
+        };
+        newEmployee(managerId);
+      });
+    };
+    const getRoleId = function (firstName, lastName, roleTitle, managersName) {
+      const sql = `SELECT roles.id FROM roles WHERE roles.title = "${roleTitle}"`;
+
+      connection.query(sql, (err, rows) => {
+        if (err) throw err;
+        addNewEmployee(firstName, lastName, rows[0].id, managersName);
+      });
+    };
+    const addNewEmployee = function (firstName, lastName, roleId, managerId) {
+      const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
+      const params = [firstName, lastName, roleId, managerId];
+
+      connection.query(sql, params, (err) => {
+        if (err) throw err;
+        console.log(`\n${firstName} ${lastName} was added to the database!\n`);
+        promptUser();
+      });
+    };
+  });
+};
 
 // "Delete" functions
 deleteDepartment = () => {};
