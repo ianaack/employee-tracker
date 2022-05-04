@@ -337,6 +337,7 @@ addEmployee = () => {
           name: "managersName",
           message: "Who is the new employee's manager?",
           choices: rows,
+          loop: false,
         },
       ])
       .then(({ managersName }) => {
@@ -515,12 +516,107 @@ deleteEmployee = () => {
 // "Update" functions
 
 updateEmployee = () => {
-  // which employee would you like to update? - list
-  // update role_id function
+  const sql = `SELECT CONCAT(employees.id," ", employees.first_name," ", employees.last_name) AS name FROM employees`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "updateEmployee",
+          message: "Which Employee's Role would you like to update?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ updateEmployee }) => {
+        let employeeId = updateEmployee.split(" ")[0];
+        let employeeFirstName = updateEmployee.split(" ")[1];
+        let employeeLastName = updateEmployee.split(" ")[2];
+
+        getEmployeeRoleId(employeeId);
+      });
+  });
+
+  let getEmployeeRoleId = function (employeeId) {
+    const sql = `SELECT roles.title AS name FROM roles`;
+
+    connection.query(sql, (err, rows) => {
+      if (err) throw err;
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "updateRole",
+            message: "What is the Employee's new Role?",
+            choices: rows,
+            loop: false,
+          },
+        ])
+        .then(({ updateRole }) => {
+          const sql = `SELECT roles.id FROM roles WHERE roles.title = "${updateRole}"`;
+
+          connection.query(sql, (err, rows) => {
+            if (err) throw err;
+            let newRoleId = rows[0].id;
+
+            updateEmployeesRole(employeeId, newRoleId);
+          });
+        });
+    });
+  };
+
+  let updateEmployeesRole = function (employeeId, newRoleId) {
+    const sql = `UPDATE employees SET employees.role_id = ${newRoleId} WHERE employees.id = ${employeeId}`;
+
+    connection.query(sql, (err, rows) => {
+      if (err) throw err;
+      console.log("\nEmployee's Role has been Updated.\n");
+      promptUser();
+    });
+  };
 };
 
 updateManagers = () => {
-  // which employee would you like to update? - list
-  // who is their new manager? - list
-  // update manager_id function
+  const sql = `SELECT CONCAT(employees.id," ", employees.first_name," ", employees.last_name) AS name FROM employees`;
+
+  connection.query(sql, (err, rows) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "whichEmployee",
+          message: "Which Employee would you like to update?",
+          choices: rows,
+          loop: false,
+        },
+        {
+          type: "list",
+          name: "newManager",
+          message: "Who is their new Manager?",
+          choices: rows,
+          loop: false,
+        },
+      ])
+      .then(({ whichEmployee, newManager }) => {
+        let employeeId = whichEmployee.split(" ")[0];
+        let employeeFirstName = whichEmployee.split(" ")[1];
+        let employeeLastName = whichEmployee.split(" ")[2];
+        let managerId = newManager.split(" ")[0];
+        let managerFirstName = newManager.split(" ")[1];
+        let managerLastName = newManager.split(" ")[2];
+
+        const sql = `UPDATE employees SET employees.manager_id = ${managerId} WHERE employees.id = ${employeeId}`;
+
+        connection.query(sql, (err, rows) => {
+          if (err) throw err;
+          console.log(
+            `\n${managerFirstName} ${managerLastName} now manages ${employeeFirstName} ${employeeLastName}\n`
+          );
+          promptUser();
+        });
+      });
+  });
 };
