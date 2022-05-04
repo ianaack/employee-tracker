@@ -55,7 +55,7 @@ https://drive.google.com/file/d/1cTq9UX9Ko5gf8iEhi8tANmpt0EruVHc1/view?usp=shari
 
 ## Questions
   
-To view other applications I have built: [Github](#https://github.com/ianaack)
+To view other applications I have built: [Github](https://github.com/ianaack)
 
 Or if you have any questions about this application please reach out to me directly via email: ianaack@gmail.com
 
